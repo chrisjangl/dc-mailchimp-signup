@@ -15,8 +15,7 @@ class DC_mailchimp_singleton extends MailChimp {
     private static $api_key = null;
     private static $instance = null;
     private static $MailChimp = null;
-    private static $trade_list_id = null;
-    private static $retail_list_id = null;
+    private static $general_user_list_id = null;
     
 	public function __construct( $api_key ='' ) {
 
@@ -88,7 +87,35 @@ class DC_mailchimp_singleton extends MailChimp {
         $lists = $MailChimp->get('lists');
         return $lists['lists'];
         
-    }   
+    }
+
+    function get_general_user_list_id() {
+
+        // check if we already have the List ID set...
+        if ( is_null( self::$general_user_list_id) ) {
+       
+            // if not, then grab it from the database...
+            $list_id = get_option('dc_mc_general_user_list_id');
+            
+            if ( !is_null( $list_id ) && $list_id ) {
+
+                // as long as there's something from the DB, assign it to our singleton instance
+                self::set_general_user_list_id( $list_id );
+
+            }
+        }
+
+        // and pass it back
+        return self::$general_user_list_id;
+    }
+
+    function set_general_user_list_id( $list_id ) {
+        if ( ! $list_id || is_null( $list_id ) ) {
+            return false;
+        } 
+        
+        self::$general_user_list_id = $list_id;
+    }
     
     // halfway there towards proper usage of get_MailChimp_instance()
     function get_list_name( $list_id ) {
@@ -165,90 +192,38 @@ class DC_mailchimp_singleton extends MailChimp {
         if ( $MailChimp ) {
 
             $hashed_email = $MailChimp->subscriberHash($email);
-            $result = $MailChimp->put("lists/$list_id/members/$hashed_email", [
+
+            // build the body parameters array 
+            $body_parameters = [
                 'email_address' =>  $email,
                 'status'        => 'subscribed',
-                // @todo: we may not want to update if nothing's being passed in...
-                'merge_fields'  =>  [
-                    // @todo: need to have these columns set dynamically
-                    'FNAME'     =>  $first_name,
-                    'LNAME'     =>  $last_name
-                ]
-            ]);
+            ];
+            
+            // build the merge fields array
+            $merge_fields = [];
+
+            // first name
+            // TODO: Does empty() what I'm expecting it to?
+            if ( $first_name && !empty( $first_name ) ) {
+                $merge_fields['FNAME'] = $first_name;
+            }
+            
+            // last name
+            if ( $last_name && !empty( $last_name ) ) {
+                $merge_fields['LNAME'] = $last_name;
+            }
+
+            // add the first or last name, if they exist
+            if ( ! empty( $merge_fields ) ) {
+                $body_parameters['merge_fields'] = $merge_fields;
+            }
+
+            // TODO: this doesn't work if we have our merge fields
+            $result = $MailChimp->put("lists/$list_id/members/$hashed_email", $body_parameters);
 
             return $result;
 
         }
-    }
-
-    /**
-     * gets the MailChimp list ID based on the user's role & plugin settings
-     *
-     * @uses get_user_by()
-     * @uses DC_mailchimp_singleton::get_list_id_for_user_role()
-     * 
-     * @param string $email
-     * @return int list_id
-     */
-    static function get_list_id_for_user_account( $email ) {
-
-        if ( ! $email ) {
-            return false;
-        }
-
-        $user_account = get_user_by( 'email', $email );
-        $roles = $user_account->roles;
-        $user_role = $roles[0];
-
-        $list_id = self::get_list_id_for_user_role( $user_role );
-
-        return $list_id;
-        
-    }
-    
-    // @todo: create documentation
-    public static function get_list_id_for_user_role( $role ) {
-
-        if ( ! $role ) {
-            return false;
-        }
-
-        // get the list id for specific role
-        $list_id = '';
-
-        switch ( $role ) {
-            case 'trade':
-
-                // if we've don't have the Trade list ID set on the singleton, retrieve it from the DB & set it
-                if ( is_null( self::$trade_list_id ) ) {
-                    
-                    $list_id = get_option('dc_mc_mailchimp_audience_trade_list_id');
-                    self::$trade_list_id = $list_id;
-
-                } else {
-
-                    $list_id = self::$trade_list_id;
-
-                }
-                break;
-            case 'retail':
-            default: 
-
-                // if we've don't have the Retail list ID set on the singleton, retrieve it from the DB & set it
-                if ( is_null( self::$retail_list_id ) ) {
-                    
-                    $list_id = get_option('dc_mc_mailchimp_audience_retail_list_id');
-                    self::$retail_list_id = $list_id;
-
-                } else {
-
-                    $list_id = self::$retail_list_id;
-
-                }
-            break;
-        }
-
-        return $list_id;
     }
 
     // @todo: create documentation
@@ -368,7 +343,7 @@ class DC_mailchimp_singleton extends MailChimp {
      * If 4th parameter not passed ($list_id), function will attempt to determine the list ID to use
      * based on results from self::get_list_id_for_user_account()
      * 
-     * @uses self::get_list_id_for_user_account()
+     * @uses self::get_list_id()
      * @uses self::upsert_subscriber()
      *
      * @param string $email
@@ -382,8 +357,8 @@ class DC_mailchimp_singleton extends MailChimp {
         // were we passed a list ID or do we need to figure it out?
         if ( ! $list_id ) {
             
-            // which list should they be subscribed to?
-            $list_id = self::get_list_id_for_user_account( $email );
+            // If we weren't, use the general list ID we have in the singleton instance
+            $list_id = self::get_general_user_list_id();
 
         }
 

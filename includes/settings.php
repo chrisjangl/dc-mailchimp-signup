@@ -11,12 +11,8 @@ function dc_mc_register_settings() {
     add_option( 'dc_mc_mailchimp_api_key' );
     
     register_setting( 'dc_mc_mailchimp_api', 'dc_mc_mailchimp_api_key' );
-    // retail user role
-    register_setting( 'dc_mc_mailchimp_api', 'dc_mc_mailchimp_audience_rule_one_user_role' );
-    register_setting( 'dc_mc_mailchimp_api', 'dc_mc_mailchimp_audience_retail_list_id' );
-    // trade member user role
-    register_setting( 'dc_mc_mailchimp_api', 'dc_mc_mailchimp_audience_rule_two_user_role' );
-    register_setting( 'dc_mc_mailchimp_api', 'dc_mc_mailchimp_audience_trade_list_id' );
+    // general user role
+    register_setting( 'dc_mc_mailchimp_api', 'dc_mc_general_user_list_id' );
 }
 add_action( 'admin_init', 'dc_mc_register_settings' );
 
@@ -49,16 +45,7 @@ function dc_mc_build_options_page() {
     $lists = $mailchimp->get_lists();
   }
 
-  $rule_one = array(
-      'user_role'   =>  'dc_mc_mailchimp_audience_rule_one_user_role',
-      'list_id'     =>  'dc_mc_mailchimp_audience_retail_list_id'
-  );
-  $rule_two = array(
-    'user_role'   =>  'dc_mc_mailchimp_audience_rule_two_user_role',
-    'list_id'     =>  'dc_mc_mailchimp_audience_wholesale_list_id'
-  );
-  $retail_list_id = get_option('dc_mc_mailchimp_audience_retail_list_id');
-  $trade_list_id = get_option('dc_mc_mailchimp_audience_trade_list_id');
+  $list_id = get_option('dc_mc_general_user_list_id');
   ?>
 
   <div>
@@ -77,41 +64,23 @@ function dc_mc_build_options_page() {
       </table>
 
       <h3>Auto-assign audience</h3>
-      <p>If you'd like to assign a user to a specific MailChimp audience based on their user role, enter it below.</p>
+      <!-- <p>If you'd like to assign a user to a specific MailChimp audience based on their user role, enter it below.</p> -->
 
-      <p>Retail</p>
       <p>
-        <label for="dc_mc_mailchimp_audience_retail_list_id"><?php _e('List:'); ?></label> 
-        <select id="dc_mc_mailchimp_audience_retail_list_id" name="dc_mc_mailchimp_audience_retail_list_id" >
+        <label for="dc_mc_general_user_list_id"><?php _e('List:'); ?></label> 
+        <select id="dc_mc_general_user_list_id" name="dc_mc_general_user_list_id" >
             <option>------</option>
             <?php
             if ( $lists ) {
                     foreach ($lists as $key => $index ) {
                         $name = $index['name'];
                         $id = $index['id'];
-                        echo "<option value=\"$id\" " . ($retail_list_id == $id ? 'selected="selected"' : '' ) . ">$name</option> ";
+                        echo "<option value=\"$id\" " . ($list_id == $id ? 'selected="selected"' : '' ) . ">$name</option> ";
                     }
             } ?>
             <hr />
         </select>
        </p>
-       
-      <p>Trade</p>
-      <p>
-        <label for="dc_mc_mailchimp_audience_trade_list_id"><?php _e('List:'); ?></label> 
-        <select id="dc_mc_mailchimp_audience_trade_list_id" name="dc_mc_mailchimp_audience_trade_list_id" >
-            <option>------</option>
-            <?php
-            if ( $lists ) {
-                    foreach ($lists as $key => $index ) {
-                        $name = $index['name'];
-                        $id = $index['id'];
-                        echo "<option value=\"$id\" " . ($trade_list_id == $id ? 'selected="selected"' : '' ) . ">$name</option> ";
-                    }
-            } ?>
-            <hr />
-        </select>
-      </p>
 
       <?php  submit_button(); ?>
     </form>
