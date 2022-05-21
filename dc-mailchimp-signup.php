@@ -3,7 +3,7 @@
 Plugin Name: MailChimp Signup
 Plugin URI:  https://digitallycultured.com
 Description: Adds a widget for you to choose a MailChimp list to add subscribers to, based on their user role.
-Version:     0.2
+Version:     0.3.0
 Author:      Digitally Cultured
 Author URI:  https://digitallycultured.com
 License:     GPL2
@@ -26,6 +26,9 @@ include( 'includes/woocommerce-integrations.php' );
 // Wholesale for WooCommerce integrations
 include( 'includes/wholesale-woocommerce-integrations.php' );
 
+// Ultimate Membership
+include( 'includes/ultimate-membership-integrations.php' );
+
 // instantiate on front end
 add_action( 'plugins_loaded', 'instantiate_front_end');
 function instantiate_front_end() {
@@ -37,5 +40,4 @@ function instantiate_front_end() {
     $mailchimp = DC_mailchimp_singleton::get_instance();
 
     $mailchimp::set_api_key( $api_key );
-    // if ( )
 }
