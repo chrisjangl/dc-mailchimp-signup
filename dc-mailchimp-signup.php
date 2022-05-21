@@ -1,14 +1,22 @@
 <?php
 /*
 Plugin Name: MailChimp Signup
-Plugin URI:  https://digitallycultured.com
-Description: Adds a widget for you to choose a MailChimp list to add subscribers to, based on their user role.
+Plugin URI:  https://github.com/chrisjangl/dc-mailchimp-signup
+Description: MailChimp integration for your website. Add widget for users to signup for your newsletter; automatically send newly registered user to a custom MailChimp audience; integrates with WooCommerce & Ultimate Member plugins.
 Version:     0.3.0
 Author:      Digitally Cultured
 Author URI:  https://digitallycultured.com
 License:     GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
+
+function dc_mc_get_plugin_name() {
+    return "MailChimp Signup";
+}
+
+function dc_mc_get_version() {
+    return "0.3.0";
+}
 
 include( 'includes/mailchimp-singleton.php' );
 

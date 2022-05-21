@@ -46,6 +46,9 @@ function dc_mc_build_options_page() {
   }
 
   $list_id = get_option('dc_mc_general_user_list_id');
+  $plugin_name = urlencode_deep( dc_mc_get_plugin_name() );
+  $plugin_version = dc_mc_get_version();
+
   ?>
 
   <div>
@@ -54,6 +57,8 @@ function dc_mc_build_options_page() {
       <?php settings_fields( 'dc_mc_mailchimp_api' ); ?>
       
       <p>Enter your MailChimp API key below. You can get your API Key <a href="http://admin.mailchimp.com/account/api-key-popup" target="_blank" >here</a>. After entering the key, you'll need to hit Save in order to grab the lists on your MailChimp account. After the widget refeshes, choose the list that you'll want to add subscribers to. Once you've filled out the rest of the info in this widget, hit save. If all went well, you'll see the List ID &amp; List Name populated below the dropdown menu.</p>
+      <p><b>Need help?</b> This plugin is free, so I can't offer in-depth support (as of yet). If you'd like to ask me a question, I'll do my best to answer or point you in the right direction, but I can't guarantee I'll be able to resolve the issue. <a href="https://digitallycultured.com/plugins/help-with-a-plugin/?plugin_name=<?php echo $plugin_name; ?>&version=<?php echo $plugin_version; ?>">Click here</a> to send me a message.</p>
+      <p>Interested in finding out when I publish updates? <a href="https://digitallycultured.com/stay-in-touch/">Click here</a> to stay informed on future releases!</p>
       <table>
         <tr valign="top">
           <th scope="row"><label for="dc_mc_slack_webhook_url">API Key:</label></th>
